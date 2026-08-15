@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buffer Meli - Layout</title>
-    <link rel="stylesheet" href="styles.css">
-	<style>
+    <title>Buffer Meli - Histórico de Liberação</title>
+
+<link rel="stylesheet" href="styles.css">
+<style>
 .auth-overlay {
     position: fixed;
     top: 0;
@@ -3327,480 +3328,154 @@ body {
 </head>
 <body>
 
-    <!-- MODAL DE RESUMO DO PALETE -->
-    <div id="pallet-modal" class="pallet-modal-overlay hidden">
-        <div class="pallet-modal-content">
-            <div class="modal-header">
-                <h3 id="modal-title">📦 Resumo do Palete</h3>
-                <button type="button" class="close-btn" onclick="fecharModalPalete()">&times;</button>
-            </div>
-            <div id="modal-content" class="status-info">
-                <!-- Conteúdo injetado via JS -->
-            </div>
-            <div style="text-align:right; margin-top: 16px;">
-                <button type="button" class="btn btn-primary" onclick="fecharModalPalete()">Fechar</button>
-            </div>
-        </div>
-    </div>
-
     <!-- BARRA DE NAVEGAÇÃO -->
     <nav class="main-navbar">
         <div class="nav-brand">📦 <strong>Buffer Meli</strong></div>
         <div class="nav-links">
-            <a href="index.html" class="nav-btn active">🗺️ Layout Buffer</a>
+            <a href="index.html" class="nav-btn">🗺️ Layout Buffer</a>
             <a href="consulta.html" class="nav-btn">🔍 Consulta e Análise</a>
             <a href="dashboard.html" class="nav-btn">📊 Dashboard</a>
-            <a href="historico.html" class="nav-btn">📋 Histórico</a>
+            <a href="historico.html" class="nav-btn active">📋 Histórico</a>
             <button type="button" class="nav-btn btn-config-link" onclick="abrirConfiguracoes()">⚙️ Configurações</button>
         </div>
     </nav>
 
-    <div id="toast-stack" class="toast-stack" aria-live="polite" aria-atomic="true"></div>
-
-    <aside id="notification-panel" class="notification-panel hidden" aria-live="polite" aria-atomic="true">
-        <div class="notification-panel-header">
-            <h3>📢 Avisos operacionais</h3>
-            <button type="button" class="notification-close" onclick="fecharPainelNotificacoes()">×</button>
-        </div>
-        <div id="notification-list" class="notification-list"></div>
-    </aside>
-
     <main class="app-container">
-        <div id="app-status" class="app-status" aria-live="polite">📌 Sistema pronto para operação.</div>
-        
-        <!-- GRID PRINCIPAL DO MAPA DO BUFFER -->
-        <div class="container">
+        <!-- CABEÇALHO -->
+        <header class="page-header">
+            <div class="header-title">
+                <h1>📋 Histórico de Liberação de MUs</h1>
+                <p>Consulta e rastreabilidade de unidades liberadas do buffer</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="exportarExcel()">📥 Exportar Planilha</button>
+                <button class="btn btn-primary" onclick="window.location.href='index.html'">⬅️ Voltar ao Layout</button>
+            </div>
+        </header>
 
-            <!-- 1. ZONA VERDE (Expedição / Saída) -->
-            <section class="zone green-zone">
-                <div class="zone-header">
-                    <h2>🟢 Expedição</h2>
-                    <span>Capacidade: 12 Pallets</span>
-                </div>
-                <div class="pallet-row green-row" 
-                     id="green-stack" 
-                     ondragover="allowDrop(event)" 
-                     ondrop="dropPalletGreen(event, this)">
-                </div>
-                <div class="zone-actions green-actions">
-                    <button type="button" class="btn-action" onclick="triggerAction('Despachar PL')">
-                        🚚 Despachar Pallet
-                    </button>
-                </div>
-            </section>
+        <!-- CARTÕES DE MÉTRICAS RÁPIDAS (KPIs) -->
+        <section class="kpi-grid">
+            <div class="kpi-card">
+                <span class="kpi-label">Total de MUs Liberadas</span>
+                <div class="kpi-value" id="kpi-total-mus">0</div>
+                <span class="kpi-sub">Histórico carregado</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-label">Total de Paletes</span>
+                <div class="kpi-value" id="kpi-total-pallets">0</div>
+                <span class="kpi-sub">Paletes despachados</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-label">Média de Ações</span>
+                <div class="kpi-value highlight" id="kpi-media-acoes">0</div>
+                <span class="kpi-sub">Ações realizadas por MU</span>
+            </div>
+        </section>
 
-            <!-- 2. ZONA CINZA (Canalização em Ruas) -->
-            <section class="zone gray-zone">
-                <div class="zone-header">
-                    <h2>🔘 Canalização</h2>
-                    <span>Capacidade: 6 Pallets / Rua</span>
-                </div>
-                <div class="streets-container">
-                    <div class="street-lane">
-                        <span class="lane-title">Rua A</span>
-                        <div class="pallet-row" data-lane="R-A" ondragover="allowDrop(event)" ondrop="dropPallet(event, this)"></div>
-                    </div>
-                    <div class="street-lane">
-                        <span class="lane-title">Rua B</span>
-                        <div class="pallet-row" data-lane="R-B" ondragover="allowDrop(event)" ondrop="dropPallet(event, this)"></div>
-                    </div>
-                    <div class="street-lane">
-                        <span class="lane-title">Rua C</span>
-                        <div class="pallet-row" data-lane="R-C" ondragover="allowDrop(event)" ondrop="dropPallet(event, this)"></div>
-                    </div>
-                    <div class="street-lane">
-                        <span class="lane-title">Rua D</span>
-                        <div class="pallet-row" data-lane="R-D" ondragover="allowDrop(event)" ondrop="dropPallet(event, this)"></div>
-                    </div>
-                    <div class="street-lane">
-                        <span class="lane-title">Rua E</span>
-                        <div class="pallet-row" data-lane="R-E" ondragover="allowDrop(event)" ondrop="dropPallet(event, this)"></div>
-                    </div>
-                </div>
-            </section>
+        <!-- BARRA DE FILTROS E BUSCA -->
+        <section class="filter-bar">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="search-input" placeholder="Buscar por MU (Ex: MU-TT-RC-20A-123), Usuário ou ID Palete...">
+            </div>
 
-            <!-- 3. ZONA AMARELA (Triagem / Check-in) -->
-            <section class="zone yellow-zone">
-                <div class="zone-header">
-                    <h2>🟡 Triagem</h2>
-                    <span>Capacidade: 6 Pallets</span>
+            <div class="filter-group">
+                <div class="filter-item">
+                    <label for="filter-date">Data:</label>
+                    <input type="date" id="filter-date">
                 </div>
-                <div class="pallet-row yellow-stack" 
-                     id="yellow-stack" 
-                     ondragover="allowDrop(event)" 
-                     ondrop="dropPalletYellow(event, this)">
-                </div>
-                <div class="zone-actions yellow-actions">
-                    <button type="button" class="btn-action" onclick="triggerAction('Checagem HH')">
-                        📱 Finalizar Separação HH
-                    </button>
-                    <button type="button" class="btn-action" onclick="triggerAction('Cadastrar MU')">
-                        📦 Cadastrar MU
-                    </button>
-                    <button type="button" class="btn-action" onclick="triggerAction('Vincular ID')">
-                        🔗 Vincular ID
-                    </button>
-                </div>
-            </section>
 
-            <!-- 4. ZONA VERMELHA (Entrada Dinâmica) -->
-            <section class="zone red-zone">
-                <div class="zone-header">
-                    <h2>🔴 Pendentes</h2>
-                    <span>Capacidade: <span id="red-count">0</span>/10 Pallets</span>
-                    <div class="red-controls">
-                        <button type="button" class="btn-control add" onclick="addRedPallet()" title="Adicionar Pallet">+</button>
-                        <button type="button" class="btn-control remove" onclick="removeRedPallet()" title="Remover Pallet">-</button>
-                    </div>
+                <div class="filter-item">
+                    <label for="filter-user">Operador:</label>
+                    <select id="filter-user">
+                        <option value="">Todos os Operadores</option>
+                        <option value="Maycon Sato">Maycon Sato</option>
+                        <option value="Wilton">Wilton</option>
+                        <option value="Gesleane Morais">Gesleane Morais</option>
+                    </select>
                 </div>
-                <div class="pallet-row red-stack" 
-                     id="red-stack" 
-                     ondragover="allowDrop(event)" 
-                     ondrop="dropPalletRed(event, this)">
-                </div>
-            </section>
+
+                <button class="btn btn-filter" onclick="aplicarFiltros()">Filtrar</button>
+            </div>
+        </section>
+
+        <!-- TABELA DE HISTÓRICO -->
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Código MU</th>
+                        <th>ID do Palete</th>
+                        <th>Data e Hora Liberação</th>
+                        <th>Operador / Usuário</th>
+                        <th>Ações Realizadas</th>
+                        <th>Tempo no Buffer</th>
+                    </tr>
+                </thead>
+                <tbody id="history-table-body">
+                    <tr><td colspan="6" style="text-align: center;">Carregando dados da planilha... ⏳</td></tr>
+                </tbody>
+            </table>
         </div>
+
+        <!-- RODAPÉ DA PAGINAÇÃO -->
+        <footer class="pagination-footer">
+            <span class="pagination-info">Mostrando <strong>1 - 4</strong> de <strong>142</strong> registros</span>
+            <div class="pagination-controls">
+                <button class="btn-page" disabled>Anterior</button>
+                <button class="btn-page active">1</button>
+                <button class="btn-page">2</button>
+                <button class="btn-page">3</button>
+                <button class="btn-page">Próximo</button>
+            </div>
+        </footer>
     </main>
 
-    <!-- MODAL DE CONFIGURAÇÕES / AUTENTICAÇÃO DO OPERADOR -->
     <div id="config-modal" class="config-overlay" style="display: none;">
         <div class="config-card">
             <div class="config-header">
-                <h3 id="config-modal-title">⚙️ Configurações do Operador</h3>
+                <h3>⚙️ Configurações do Operador</h3>
                 <button type="button" class="close-btn" onclick="fecharConfiguracoes()">&times;</button>
             </div>
-
-            <!-- ESTADO 1: EXIBIDO QUANDO NÃO HÁ SESSÃO (LOGIN / CADASTRO) -->
-            <div id="auth-forms-container" style="display: block;">
-                <div class="auth-tabs" style="display: flex; gap: 10px; margin-bottom: 15px;">
-                    <button type="button" class="tab-btn active" onclick="switchModalTab('login')" style="flex:1; padding: 8px;">Login</button>
-                    <button type="button" class="tab-btn" onclick="switchModalTab('register')" style="flex:1; padding: 8px;">Cadastrar</button>
+            <div class="config-section">
+                <h4>📊 Sessão Ativa</h4>
+                <div class="info-row">
+                    <span>Usuário:</span>
+                    <strong id="cfg-user-name">-</strong>
                 </div>
-
-                <!-- Aba Login -->
-                <div id="modal-tab-login" class="modal-tab-content" style="display: block;">
-                    <form onsubmit="realizarLogin(event)">
-                        <div class="input-group">
-                            <label>Usuário / Matrícula</label>
-                            <input type="text" id="login-username" placeholder="Ex: ml-colaborador" required autocomplete="username">
-                        </div>
-                        <div class="input-group">
-                            <label>Senha</label>
-                            <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password">
-                        </div>
-                        <button type="submit" class="btn-auth primary" style="width: 100%; margin-top: 10px;">Acessar Sistema</button>
-                    </form>
-                </div>
-
-                <!-- Aba Cadastrar -->
-                <div id="modal-tab-register" class="modal-tab-content" style="display: none;">
-                    <form onsubmit="realizarCadastro(event)">
-                        <div class="input-group">
-                            <label>Nome Completo</label>
-                            <input type="text" id="reg-fullname" placeholder="Ex: Maycon Sato" required>
-                        </div>
-                        <div class="input-group">
-                            <label>Usuário / Matrícula</label>
-                            <input type="text" id="reg-username" placeholder="Ex: ml-colaborador" required>
-                        </div>
-                        <div class="input-group">
-                            <label>Senha</label>
-                            <input type="password" id="reg-password" placeholder="••••••••" required>
-                        </div>
-                        <button type="submit" class="btn-auth secondary" style="width: 100%; margin-top: 10px;">Cadastrar Operador</button>
-                    </form>
+                <div class="info-row">
+                    <span>Tempo Logado:</span>
+                    <strong id="cfg-session-timer" class="timer-badge">00:00:00</strong>
                 </div>
             </div>
-
-            <!-- ESTADO 2: EXIBIDO QUANDO LOGADO (PAINEL DE CONFIGURAÇÕES) -->
-            <div id="config-panel-container" style="display: none;">
-                <div class="config-section">
-                    <h4>📊 Sessão Ativa</h4>
-                    <div class="info-row">
-                        <span>Usuário:</span>
-                        <strong id="cfg-user-name">-</strong>
-                    </div>
-                    <div class="info-row">
-                        <span>Tempo Logado:</span>
-                        <strong id="cfg-session-timer" class="timer-badge">00:00:00</strong>
-                    </div>
-                </div>
-
-                <div class="config-section">
-                    <h4>🎨 Tema do Sistema (Buffer Meli)</h4>
-                    <div class="theme-buttons">
-                        <button type="button" class="theme-btn dark" onclick="mudarTema('dark')">Dark Mode</button>
-                        <button type="button" class="theme-btn light" onclick="mudarTema('light')">Light Mode</button>
-                        <button type="button" class="theme-btn meli" onclick="mudarTema('meli')">🟡 Meli Mode</button>
-                    </div>
-                </div>
-
-                <div class="config-section">
-                    <h4>🔒 Alterar Senha</h4>
-                    <form onsubmit="alterarSenhaOperador(event)">
-                        <div class="input-group">
-                            <label>Senha Atual</label>
-                            <input type="password" id="cfg-old-pass" placeholder="••••••••" required>
-                        </div>
-                        <div class="input-group">
-                            <label>Nova Senha</label>
-                            <input type="password" id="cfg-new-pass" placeholder="••••••••" required>
-                        </div>
-                        <button type="submit" class="btn-config primary">Salvar Nova Senha</button>
-                    </form>
-                </div>
-
-                <div class="config-footer" style="margin-top: 15px;">
-                    <button type="button" class="btn-config danger" onclick="realizarLogout()" style="width: 100%;">Encerrar Sessão (Logout)</button>
+            <div class="config-section">
+                <h4>🎨 Tema do Sistema</h4>
+                <div class="theme-buttons">
+                    <button type="button" class="theme-btn dark" onclick="mudarTema('dark')">Dark</button>
+                    <button type="button" class="theme-btn light" onclick="mudarTema('light')">Light</button>
+                    <button type="button" class="theme-btn meli" onclick="mudarTema('meli')">Meli</button>
                 </div>
             </div>
-
+            <div class="config-section">
+                <h4>🔒 Alterar Senha</h4>
+                <form onsubmit="alterarSenhaOperador(event)">
+                    <div class="input-group">
+                        <label>Senha Atual</label>
+                        <input type="password" id="cfg-old-pass" placeholder="••••••••" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Nova Senha</label>
+                        <input type="password" id="cfg-new-pass" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn-config primary">Salvar Nova Senha</button>
+                </form>
+            </div>
+            <div class="config-footer">
+                <button type="button" class="btn-config danger" onclick="realizarLogout()">Encerrar Sessão</button>
+            </div>
         </div>
     </div>
 
-    <!-- SCRIPTS -->
     <script src="script.js"></script>
-    <script>
-        // Fallbacks de segurança para funções do script.js externo
-        if (typeof allowDrop === 'undefined') { function allowDrop(ev) { ev.preventDefault(); } }
-        if (typeof fecharModalPalete === 'undefined') { function fecharModalPalete() { document.getElementById('pallet-modal')?.classList.add('hidden'); } }
-        if (typeof fecharPainelNotificacoes === 'undefined') { function fecharPainelNotificacoes() { document.getElementById('notification-panel')?.classList.add('hidden'); } }
-        if (typeof triggerAction === 'undefined') { function triggerAction(action) { console.log('Ação:', action); } }
-        if (typeof addRedPallet === 'undefined') { function addRedPallet() {} }
-        if (typeof removeRedPallet === 'undefined') { function removeRedPallet() {} }
-        if (typeof dropPallet === 'undefined') { function dropPallet(ev, el) {} }
-        if (typeof dropPalletGreen === 'undefined') { function dropPalletGreen(ev, el) {} }
-        if (typeof dropPalletYellow === 'undefined') { function dropPalletYellow(ev, el) {} }
-        if (typeof dropPalletRed === 'undefined') { function dropPalletRed(ev, el) {} }
-
-        // Configurações e Inicialização do Login / Sheets
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyWvQ8Anvus1la6b58rb0PDCB5miiiYo0gVUevofddG8Sm1owo20hx1cZXm-9AX8ivVNA/exec';
-        let timerInterval;
-
-        document.addEventListener("DOMContentLoaded", () => {
-            carregarTema();
-            verificarSessaoAtiva();
-        });
-
-        async function apiGetUsuarios() {
-            try {
-                const response = await fetch(`${SCRIPT_URL}?action=get_usuarios`);
-                const data = await response.json();
-                if (Array.isArray(data) && data.length === 0) return {}; 
-                return data || {};
-            } catch (error) {
-                console.error("Erro ao buscar dados do servidor:", error);
-                return null;
-            }
-        }
-
-        async function apiSaveUsuarios(dados) {
-            try {
-                const payload = `action=save_usuarios&data=${encodeURIComponent(JSON.stringify(dados))}`;
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: payload
-                });
-                const result = await response.json();
-                return result.status === 'success';
-            } catch (error) {
-                console.error("Erro ao salvar no servidor:", error);
-                return false;
-            }
-        }
-
-        function switchModalTab(tabId) {
-            document.querySelectorAll('#config-modal .tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.modal-tab-content').forEach(content => {
-                content.style.display = 'none';
-            });
-
-            event.currentTarget.classList.add('active');
-            const selectedTab = document.getElementById(`modal-tab-${tabId}`);
-            if (selectedTab) {
-                selectedTab.style.display = 'block';
-            }
-        }
-
-        async function realizarCadastro(event) {
-            event.preventDefault(); 
-            const btn = event.target.querySelector('button[type="submit"]');
-            const txtOriginal = btn.innerText;
-            btn.innerText = "Aguarde, processando...";
-            btn.disabled = true;
-
-            const nome = document.getElementById('reg-fullname').value;
-            const usuario = document.getElementById('reg-username').value;
-            const senha = document.getElementById('reg-password').value;
-
-            let usuariosDB = await apiGetUsuarios();
-
-            if (usuariosDB === null) {
-                alert('❌ Falha ao se conectar com o servidor. Verifique a internet.');
-                restaurarBotao(btn, txtOriginal);
-                return;
-            }
-
-            if (usuariosDB[usuario]) {
-                alert('❌ Erro: Este usuário/matrícula já está cadastrado no sistema!');
-                restaurarBotao(btn, txtOriginal);
-                return;
-            }
-
-            usuariosDB[usuario] = { nome: nome, senha: senha };
-            const sucesso = await apiSaveUsuarios(usuariosDB);
-
-            if (sucesso) {
-                alert('✅ Cadastro realizado com sucesso! Faça login para continuar.');
-                event.target.reset();
-                document.querySelector('#config-modal .tab-btn').click();
-            } else {
-                alert('❌ Erro ao salvar cadastro no servidor. Tente novamente.');
-            }
-
-            restaurarBotao(btn, txtOriginal);
-        }
-
-        async function realizarLogin(event) {
-            event.preventDefault();
-            const btn = event.target.querySelector('button[type="submit"]');
-            const txtOriginal = btn.innerText;
-            btn.innerText = "Validando acessos...";
-            btn.disabled = true;
-
-            const usuarioInput = document.getElementById('login-username').value;
-            const senhaInput = document.getElementById('login-password').value;
-
-            let usuariosDB = await apiGetUsuarios();
-
-            if (usuariosDB === null) {
-                alert('❌ Falha ao se conectar com o servidor. Tente novamente.');
-                restaurarBotao(btn, txtOriginal);
-                return;
-            }
-
-            if (usuariosDB[usuarioInput] && usuariosDB[usuarioInput].senha === senhaInput) {
-                const dadosSessao = {
-                    usuario: usuarioInput,
-                    nome: usuariosDB[usuarioInput].nome,
-                    loginTime: Date.now()
-                };
-
-                localStorage.setItem('wms_sessao_ativa', JSON.stringify(dadosSessao));
-                alert(`Bem-vindo ao sistema, ${dadosSessao.nome}!`);
-                event.target.reset();
-                verificarSessaoAtiva();
-                fecharConfiguracoes();
-            } else {
-                alert('❌ Usuário não encontrado ou senha incorreta!');
-            }
-
-            restaurarBotao(btn, txtOriginal);
-        }
-
-        function verificarSessaoAtiva() {
-            const sessao = JSON.parse(localStorage.getItem('wms_sessao_ativa'));
-            const authForms = document.getElementById('auth-forms-container');
-            const configPanel = document.getElementById('config-panel-container');
-            const modalTitle = document.getElementById('config-modal-title');
-
-            if (sessao) {
-                if (authForms) authForms.style.display = 'none';
-                if (configPanel) configPanel.style.display = 'block';
-                if (modalTitle) modalTitle.innerText = "⚙️ Configurações do Operador";
-
-                const userNameEl = document.getElementById('cfg-user-name');
-                if (userNameEl) userNameEl.innerText = sessao.nome;
-                iniciarTimer(sessao.loginTime);
-            } else {
-                if (authForms) authForms.style.display = 'block';
-                if (configPanel) configPanel.style.display = 'none';
-                if (modalTitle) modalTitle.innerText = "🔐 Identificação do Operador";
-            }
-        }
-
-        function realizarLogout() {
-            localStorage.removeItem('wms_sessao_ativa');
-            clearInterval(timerInterval);
-            fecharConfiguracoes();
-            alert('Sessão encerrada com sucesso.');
-            verificarSessaoAtiva();
-        }
-
-        async function alterarSenhaOperador(event) {
-            event.preventDefault();
-            const sessao = JSON.parse(localStorage.getItem('wms_sessao_ativa'));
-            if (!sessao) return;
-
-            const btn = event.target.querySelector('button[type="submit"]');
-            const txtOriginal = btn.innerText;
-            btn.innerText = "Salvando...";
-            btn.disabled = true;
-
-            const senhaAntiga = document.getElementById('cfg-old-pass').value;
-            const senhaNova = document.getElementById('cfg-new-pass').value;
-
-            let usuariosDB = await apiGetUsuarios();
-
-            if (usuariosDB[sessao.usuario].senha !== senhaAntiga) {
-                alert('❌ A senha atual está incorreta!');
-                restaurarBotao(btn, txtOriginal);
-                return;
-            }
-
-            usuariosDB[sessao.usuario].senha = senhaNova;
-            const sucesso = await apiSaveUsuarios(usuariosDB);
-
-            if (sucesso) {
-                alert('✅ Senha alterada com sucesso!');
-                event.target.reset();
-            } else {
-                alert('❌ Falha ao atualizar senha no servidor.');
-            }
-
-            restaurarBotao(btn, txtOriginal);
-        }
-
-        function abrirConfiguracoes() { 
-            verificarSessaoAtiva();
-            const modal = document.getElementById('config-modal');
-            if (modal) modal.style.display = 'flex'; 
-        }
-
-        function fecharConfiguracoes() { 
-            const modal = document.getElementById('config-modal');
-            if (modal) modal.style.display = 'none'; 
-        }
-
-        function restaurarBotao(btn, texto) {
-            if (btn) {
-                btn.innerText = texto;
-                btn.disabled = false;
-            }
-        }
-
-        function iniciarTimer(loginTime) {
-            clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                const diff = Math.floor((Date.now() - loginTime) / 1000);
-                const horas = String(Math.floor(diff / 3600)).padStart(2, '0');
-                const minutos = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
-                const segundos = String(diff % 60).padStart(2, '0');
-                const timerEl = document.getElementById('cfg-session-timer');
-                if (timerEl) timerEl.innerText = `${horas}:${minutos}:${segundos}`;
-            }, 1000);
-        }
-
-        function mudarTema(tema) {
-            document.body.classList.remove('theme-dark', 'theme-light', 'theme-meli');
-            document.body.classList.add(`theme-${tema}`);
-            localStorage.setItem('wms_tema_preferido', tema);
-        }
-
-        function carregarTema() {
-            mudarTema(localStorage.getItem('wms_tema_preferido') || 'light');
-        }
-    </script>
 </body>
 </html>
